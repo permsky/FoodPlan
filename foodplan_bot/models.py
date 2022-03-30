@@ -79,6 +79,7 @@ class Subscription(models.Model):
         return f'Подписка пользователя {self.name} на {self.menu_type} меню'
     
     class Meta:
+        ordering = ['-expiration_date']
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
 
@@ -88,7 +89,10 @@ class DishRecipe(models.Model):
         verbose_name='Название блюда',
         max_length=256
     )
-    image = models.ImageField(upload_to='dishes')
+    image = models.ImageField(
+        upload_to='dishes',
+        verbose_name='Фото блюда'
+    )
     ingredients = models.JSONField(verbose_name='Ингридиенты')
     description = models.TextField(verbose_name='Описание блюда')
     calorific_value = models.PositiveIntegerField(
