@@ -23,11 +23,11 @@ class SubscriptionAdmin(admin.ModelAdmin):
 @admin.register(DishRecipe)
 class DishRecipeAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'image',
         'name',
         'ingredients',
         'description',
         'calorific_value',
         'recipe',
-        'subscriptions',
     )
