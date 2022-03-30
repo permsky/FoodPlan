@@ -26,10 +26,10 @@ class User(models.Model):
 
 class Subscription(models.Model):
     TYPE_CHOICES = [
-        ('1', 'Классическое'),
-        ('2', 'Низкоуглеводное'),
-        ('3', 'Вегетарианское'),
-        ('4', 'Кето'),
+        ('Классическое', 'Классическое'),
+        ('Низкоуглеводное', 'Низкоуглеводное'),
+        ('Вегетарианское', 'Вегетарианское'),
+        ('Кето', 'Кето'),
     ]
     ALLERGY_CHOICES = [
         ('1', 'Рыба и морепродукты'),
@@ -40,12 +40,12 @@ class Subscription(models.Model):
         ('6', 'Молочные продукты'),
     ]
     PERSON_CHOICES = [
-        ('1', '1'),
-        ('2', '2'),
-        ('3', '3'),
-        ('4', '4'),
-        ('5', '5'),
-        ('6', '6'),
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (5, 5),
+        (6, 6),
     ]
 
     user = models.ForeignKey(
@@ -67,16 +67,20 @@ class Subscription(models.Model):
         choices=PERSON_CHOICES
     )
     allergy = models.CharField(
-        verbose_name='',
+        verbose_name='Аллергия',
         max_length=21,
-        choices=ALLERGY_CHOICES
+        choices=ALLERGY_CHOICES,
+        blank=True
     )
     expiration_date = models.DateTimeField(
         verbose_name='Срок действия подписки'
     )
 
     def __str__(self):
-        return f'Подписка пользователя {self.name} на {self.menu_type} меню'
+        return (
+            f'Подписка пользователя {self.user} на {self.menu_type.lower()} меню'
+            f' до {self.expiration_date}'
+        )
     
     class Meta:
         ordering = ['-expiration_date']
@@ -91,7 +95,8 @@ class DishRecipe(models.Model):
     )
     image = models.ImageField(
         upload_to='dishes',
-        verbose_name='Фото блюда'
+        verbose_name='Фото блюда',
+        blank=True
     )
     ingredients = models.JSONField(verbose_name='Ингридиенты')
     description = models.TextField(verbose_name='Описание блюда')
