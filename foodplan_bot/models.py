@@ -58,6 +58,7 @@ class Subscription(models.Model):
         max_length=15,
         choices=TYPE_CHOICES
     )
+    menu = models.JSONField(verbose_name='Меню по подписке')
     person_count = models.PositiveSmallIntegerField(
         verbose_name='Количество персон',
         choices=PERSON_CHOICES
@@ -95,7 +96,7 @@ class DishRecipe(models.Model):
         ('Вегетарианское', 'Вегетарианское'),
         ('Кето', 'Кето'),
     ]
-    
+
     name = models.CharField(
         verbose_name='Название блюда',
         max_length=256
