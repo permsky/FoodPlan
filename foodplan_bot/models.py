@@ -24,13 +24,7 @@ class User(models.Model):
         verbose_name_plural = 'Пользователи'
 
 
-class Subscription(models.Model):
-    TYPE_CHOICES = [
-        ('Классическое', 'Классическое'),
-        ('Низкоуглеводное', 'Низкоуглеводное'),
-        ('Вегетарианское', 'Вегетарианское'),
-        ('Кето', 'Кето'),
-    ]
+class Allergy(models.Model):
     ALLERGY_CHOICES = [
         ('1', 'Рыба и морепродукты'),
         ('2', 'Мясо'),
@@ -39,6 +33,34 @@ class Subscription(models.Model):
         ('5', 'Орехи и бобовые'),
         ('6', 'Молочные продукты'),
     ]
+
+    type = models.CharField(
+        verbose_name='Аллерген',
+        max_length=21,
+        choices=ALLERGY_CHOICES
+    )
+    categories = models.JSONField(
+        verbose_name='Категории блюд',
+        default=dict,
+        blank=True
+    )
+
+    def __str__(self):
+        return self.type
+
+    class Meta:
+        verbose_name = 'Аллегргия'
+        verbose_name_plural = 'Аллегргии'
+
+
+class Subscription(models.Model):
+    TYPE_CHOICES = [
+        ('Классическое', 'Классическое'),
+        ('Низкоуглеводное', 'Низкоуглеводное'),
+        ('Вегетарианское', 'Вегетарианское'),
+        ('Кето', 'Кето'),
+    ]
+
     PERSON_CHOICES = [
         (1, 1),
         (2, 2),
@@ -58,7 +80,10 @@ class Subscription(models.Model):
         max_length=15,
         choices=TYPE_CHOICES
     )
-    menu = models.JSONField(verbose_name='Меню по подписке')
+    menu = models.JSONField(
+        verbose_name='Меню по подписке',
+        default=dict
+    )
     person_count = models.PositiveSmallIntegerField(
         verbose_name='Количество персон',
         choices=PERSON_CHOICES
@@ -67,10 +92,10 @@ class Subscription(models.Model):
         verbose_name='Количество приемов пищи',
         choices=PERSON_CHOICES
     )
-    allergy = models.CharField(
-        verbose_name='Аллергия',
-        max_length=21,
-        choices=ALLERGY_CHOICES,
+    allergy = models.ManyToManyField(
+        Allergy,
+        related_name='subscriptions',
+        verbose_name='Подписки',
         blank=True
     )
     expiration_date = models.DateTimeField(
@@ -82,6 +107,10 @@ class Subscription(models.Model):
             f'Подписка пользователя {self.user} на {self.menu_type.lower()} меню'
             f' до {self.expiration_date}'
         )
+    
+    def create_menu(self):
+        dishes = DishRecipe.objects.filter(menu_type=self.menu_type)
+
     
     class Meta:
         ordering = ['-expiration_date']
@@ -121,7 +150,8 @@ class DishRecipe(models.Model):
     menu_type = models.CharField(
         verbose_name='Тип меню',
         max_length=15,
-        choices=TYPE_CHOICES
+        choices=TYPE_CHOICES,
+        default='Классическое'
     )
 
     def __str__(self):
