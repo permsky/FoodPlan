@@ -89,6 +89,13 @@ class Subscription(models.Model):
 
 
 class DishRecipe(models.Model):
+    TYPE_CHOICES = [
+        ('Классическое', 'Классическое'),
+        ('Низкоуглеводное', 'Низкоуглеводное'),
+        ('Вегетарианское', 'Вегетарианское'),
+        ('Кето', 'Кето'),
+    ]
+    
     name = models.CharField(
         verbose_name='Название блюда',
         max_length=256
@@ -109,6 +116,11 @@ class DishRecipe(models.Model):
         related_name='subscriptions',
         verbose_name='Подписки',
         blank=True
+    )
+    menu_type = models.CharField(
+        verbose_name='Тип меню',
+        max_length=15,
+        choices=TYPE_CHOICES
     )
 
     def __str__(self):
