@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from email.policy import default
 from django.db import models
 import math
 import random
@@ -28,19 +29,20 @@ class User(models.Model):
 
 
 class Category(models.Model):
-    CATEGORY_CHOICES = [
-        ('1', 'Блюда из картофеля'),
-        ('2', 'Овощи и грибы'),
-        ('3', 'Рыба и морепродукты'),
-        ('4', 'Мясо'),
-        ('5', 'Крупы, бобовые'),
-        ('6', 'Яйца и молочные продукты'),
-    ]
+    # CATEGORY_CHOICES = [
+    #     ('1', 'Блюда из картофеля'),
+    #     ('2', 'Овощи и грибы'),
+    #     ('3', 'Рыба и морепродукты'),
+    #     ('4', 'Мясо'),
+    #     ('5', 'Крупы, бобовые'),
+    #     ('6', 'Яйца и молочные продукты'),
+    #     ('7', 'грибы'),
+    # ]
 
     name = models.CharField(
         verbose_name='Категория блюда',
         max_length=50,
-        choices=CATEGORY_CHOICES,
+        # choices=CATEGORY_CHOICES,
         unique=True
     )
 
@@ -193,11 +195,16 @@ class DishRecipe(models.Model):
         blank=True
     )
     ingredients = models.JSONField(verbose_name='Ингридиенты')
-    description = models.TextField(verbose_name='Описание блюда')
-    calorific_value = models.PositiveIntegerField(
-        verbose_name='Калорийность'
+    instructions = models.JSONField(
+        verbose_name='Инструкции',
+        default=dict
     )
-    recipe = models.TextField(verbose_name='Рецепт')
+    description = models.TextField(verbose_name='Описание блюда')
+    timing = models.CharField(
+        verbose_name='Время приготовления',
+        max_length=10,
+        default=''
+    )
     categories = models.ManyToManyField(
         Category,
         related_name='categories_for_dishes',

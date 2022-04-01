@@ -27,9 +27,10 @@ class DishRecipeAdmin(admin.ModelAdmin):
         'image',
         'name',
         'ingredients',
+        'instructions',
         'description',
-        'calorific_value',
-        'recipe',
+        'timing',
+        'menu_type',
     )
 
 
