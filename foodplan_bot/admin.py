@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User, Subscription, DishRecipe, Allergy
+from .models import User, Subscription, DishRecipe, Allergy, Category
 
 
 @admin.register(User)
@@ -13,6 +13,7 @@ class SubscriptionAdmin(admin.ModelAdmin):
     list_display = (
         'user',
         'menu_type',
+        'menu',
         'person_count',
         'eating_count',
         'expiration_date',
@@ -35,3 +36,8 @@ class DishRecipeAdmin(admin.ModelAdmin):
 @admin.register(Allergy)
 class AllergyAdmin(admin.ModelAdmin):
     list_display = ('id', 'type')
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')

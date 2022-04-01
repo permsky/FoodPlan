@@ -1,4 +1,7 @@
+from datetime import datetime, timedelta, timezone
 from django.db import models
+import math
+import random
 
 
 class User(models.Model):
@@ -18,10 +21,35 @@ class User(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+
+class Category(models.Model):
+    CATEGORY_CHOICES = [
+        ('1', 'Блюда из картофеля'),
+        ('2', 'Овощи и грибы'),
+        ('3', 'Рыба и морепродукты'),
+        ('4', 'Мясо'),
+        ('5', 'Крупы, бобовые'),
+        ('6', 'Яйца и молочные продукты'),
+    ]
+
+    name = models.CharField(
+        verbose_name='Категория блюда',
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        unique=True
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Категория блюд'
+        verbose_name_plural = 'Категории блюд'
 
 
 class Allergy(models.Model):
@@ -37,11 +65,13 @@ class Allergy(models.Model):
     type = models.CharField(
         verbose_name='Аллерген',
         max_length=21,
-        choices=ALLERGY_CHOICES
+        choices=ALLERGY_CHOICES,
+        unique=True
     )
-    categories = models.JSONField(
-        verbose_name='Категории блюд',
-        default=dict,
+    categories = models.ManyToManyField(
+        Category,
+        related_name='categories_for_allergy',
+        verbose_name='Категории',
         blank=True
     )
 
@@ -49,8 +79,8 @@ class Allergy(models.Model):
         return self.type
 
     class Meta:
-        verbose_name = 'Аллегргия'
-        verbose_name_plural = 'Аллегргии'
+        verbose_name = 'Аллергия'
+        verbose_name_plural = 'Аллергии'
 
 
 class Subscription(models.Model):
@@ -82,7 +112,8 @@ class Subscription(models.Model):
     )
     menu = models.JSONField(
         verbose_name='Меню по подписке',
-        default=dict
+        default=dict,
+        blank=True
     )
     person_count = models.PositiveSmallIntegerField(
         verbose_name='Количество персон',
@@ -94,8 +125,8 @@ class Subscription(models.Model):
     )
     allergy = models.ManyToManyField(
         Allergy,
-        related_name='subscriptions',
-        verbose_name='Подписки',
+        related_name='allergy',
+        verbose_name='Аллергии',
         blank=True
     )
     expiration_date = models.DateTimeField(
@@ -104,14 +135,40 @@ class Subscription(models.Model):
 
     def __str__(self):
         return (
-            f'Подписка пользователя {self.user} на {self.menu_type.lower()} меню'
-            f' до {self.expiration_date}'
+            f'Подписка пользователя {self.user} на {self.menu_type.lower()} '
+            f'меню до {self.expiration_date}'
         )
-    
+
     def create_menu(self):
         dishes = DishRecipe.objects.filter(menu_type=self.menu_type)
+        if self.allergy.all():
+            for allergy in self.allergy.all():
+                for category in allergy.categories.all():
+                    dishes = dishes.exclude(categories=category)
+        menu = dict()
+        dates = list()
+        dish_ids = list()
+        start_date = datetime.now(timezone.utc)
+        for days in range(int((self.expiration_date - start_date).days) + 2):
+            dates.append(start_date + timedelta(days))
+        for dish in dishes:
+            dish_ids.append(dish.id)
+        menu_dishes = list()
+        for index in range(
+            math.ceil(len(dates)*self.eating_count/len(dish_ids))
+        ):
+            random.shuffle(dish_ids)
+            dishes_temp = dish_ids.copy()
+            random.shuffle(dishes_temp)
+            menu_dishes.extend(dishes_temp)
+        for day in dates:
+            menu[day.strftime("%d-%m-%Y")] = dict()
+            for eating_number in range(self.eating_count):
+                menu[day.strftime("%d-%m-%Y")][eating_number + 1] = \
+                    menu_dishes.pop()
+        self.menu = menu
+        self.save()
 
-    
     class Meta:
         ordering = ['-expiration_date']
         verbose_name = 'Подписка'
@@ -141,10 +198,10 @@ class DishRecipe(models.Model):
         verbose_name='Калорийность'
     )
     recipe = models.TextField(verbose_name='Рецепт')
-    subscriptions = models.ManyToManyField(
-        Subscription,
-        related_name='subscriptions',
-        verbose_name='Подписки',
+    categories = models.ManyToManyField(
+        Category,
+        related_name='categories_for_dishes',
+        verbose_name='Категории',
         blank=True
     )
     menu_type = models.CharField(
@@ -156,7 +213,7 @@ class DishRecipe(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = 'Блюдо'
         verbose_name_plural = 'Блюда'
