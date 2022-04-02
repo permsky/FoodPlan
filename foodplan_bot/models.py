@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from email.policy import default
-from django.db import models
 import math
 import random
+
+from django.db import models
+from  django.utils.timezone import now as tz_now
 
 
 class User(models.Model):
@@ -17,7 +18,8 @@ class User(models.Model):
     phone_number = models.CharField(
         verbose_name='Номер телефона пользователя',
         max_length=12,
-        unique=True
+        unique=True,
+        blank=True
     )
 
     def __str__(self):
@@ -119,11 +121,13 @@ class Subscription(models.Model):
     )
     person_count = models.PositiveSmallIntegerField(
         verbose_name='Количество персон',
-        choices=PERSON_CHOICES
+        choices=PERSON_CHOICES,
+        default=1
     )
     eating_count = models.PositiveSmallIntegerField(
         verbose_name='Количество приемов пищи',
-        choices=PERSON_CHOICES
+        choices=PERSON_CHOICES,
+        default=1
     )
     allergy = models.ManyToManyField(
         Allergy,
@@ -132,7 +136,12 @@ class Subscription(models.Model):
         blank=True
     )
     expiration_date = models.DateTimeField(
-        verbose_name='Срок действия подписки'
+        verbose_name='Срок действия подписки',
+        default=tz_now
+    )
+    is_paid = models.BooleanField(
+        verbose_name='Статус оплаты',
+        default=False
     )
 
     def __str__(self):
