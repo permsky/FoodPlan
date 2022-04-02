@@ -44,8 +44,8 @@ class States(Enum):
     ALLERGY = 8
     INPUT_PERIOD = 9
     PAYMENT = 10
-    # IN_GAME = 11
-    # INPUT_NAME = 12
+    CHOOSE_DISH = 11
+    SHOW_DISH = 12
     # INPUT_EMAIL = 13
     # INPUT_WISHLIST = 14
     # INPUT_LETTER = 15
@@ -254,6 +254,38 @@ def do_payment(update, context):
     return States.START
 
 
+def show_subscriptions(update, context):
+    chat_id = update.message.chat_id
+    update.message.reply_text(
+        dedent(f'''\
+            Список ваших подписок:
+        '''),
+        reply_markup=keyboards.create_subscriptions_keyboard(chat_id)
+    )
+    return States.CHOOSE_DISH
+
+
+def choose_dish(update, context):
+    subscription_id = update.message.text.split(' ')[3]
+    subscription = Subscription.objects.get(id=subscription_id)
+    update.message.reply_text(
+        dedent(f'''\
+            Список блюд на сегодня:
+        '''),
+        reply_markup=keyboards.create_day_menu_keyboard(subscription_id)
+    )
+    return States.SHOW_DISH
+
+
+def show_dish(update, context):
+    update.message.reply_text(
+        dedent(f'''\
+            Детали блюда:
+        ''')
+    )
+    return States.START
+
+
 def cancel(update, context):
     update.message.reply_text(
         dedent(f'''\
@@ -299,6 +331,10 @@ def main():
                 MessageHandler(
                     Filters.regex('Сформировать подписку$'),
                     create_subscription
+                ),
+                MessageHandler(
+                    Filters.regex('Мои подписки$'),
+                    show_subscriptions
                 )
             ],
             States.MENU_TYPE:[
@@ -321,7 +357,7 @@ def main():
             ],
             States.EATING_COUNT:[
                 MessageHandler(
-                    Filters.regex(r'^[1-6]$'),
+                    Filters.regex('[1-6]'),
                     set_eating_count
                 )
             ],
@@ -378,6 +414,18 @@ def main():
                     Filters.regex('Оплатить$'),
                     do_payment
                 )
+            ],
+            States.CHOOSE_DISH: [
+                MessageHandler(
+                    Filters.text & ~Filters.command,
+                    choose_dish
+                ),
+            ],
+            States.SHOW_DISH: [
+                MessageHandler(
+                    Filters.text & ~Filters.command,
+                    show_dish
+                ),
             ],
         },
         fallbacks=[
