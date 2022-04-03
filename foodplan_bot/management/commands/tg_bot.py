@@ -6,14 +6,7 @@ import logging
 from django.conf import settings
 from django.core.management import BaseCommand, CommandError
 from django.core.exceptions import ObjectDoesNotExist
-from telegram import (
-    Update,
-    ReplyKeyboardMarkup,
-    ReplyKeyboardRemove,
-    KeyboardButton
-)
 from telegram.ext import (
-    CallbackContext,
     MessageHandler,
     Filters,
     ConversationHandler,
@@ -46,17 +39,12 @@ class States(Enum):
     PAYMENT = 10
     CHOOSE_DISH = 11
     SHOW_DISH = 12
-    # INPUT_EMAIL = 13
-    # INPUT_WISHLIST = 14
-    # INPUT_LETTER = 15
-    # CHANGE_GAME_PARAMS = 16
-    # CHANGE_GAME_NAME = 17
-    # CHOOSE_NEW_COST_RANGE = 18
-    # CHOOSE_NEW_TOSS_DATE = 19
 
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                        level=logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
 
@@ -88,9 +76,11 @@ def start(update, context):
 
 def registrate(update, context):
     update.message.reply_text(
-        dedent(f'''\
-            Введите ваше имя и фамилию
-        '''),
+        dedent(
+            f'''\
+                Введите ваше имя и фамилию
+            '''
+        ),
     )
     return States.INPUT_NAME
 
@@ -101,9 +91,11 @@ def handle_input_name(update, context):
         tg_chat_id=int(update.message.chat_id)
     )
     update.message.reply_text(
-        dedent(f'''\
-        Введите номер телефона
-        '''),
+        dedent(
+            f'''\
+                Введите номер телефона
+            '''
+        ),
     )
     return States.INPUT_PHONE
 
@@ -113,9 +105,11 @@ def handle_input_phone(update, context):
     user.phone_number = update.message.text
     user.save()
     update.message.reply_text(
-        dedent(f'''\
-        Сервис для составления меню по вашим запросам
-        '''),
+        dedent(
+            f'''\
+                Сервис для составления меню по вашим запросам
+            '''
+        ),
         reply_markup=keyboards.create_start_keyboard()
     )
     return States.START
@@ -123,9 +117,11 @@ def handle_input_phone(update, context):
 
 def create_subscription(update, context):
     update.message.reply_text(
-        dedent(f'''\
-            Выберите тип меню
-        '''),
+        dedent(
+            f'''\
+                Выберите тип меню
+            '''
+        ),
         reply_markup=keyboards.create_menu_type_keyboard()
     )
     return States.MENU_TYPE
@@ -145,9 +141,11 @@ def set_menu_type(update, context):
         menu_type=update.message.text
     )
     update.message.reply_text(
-        dedent(f'''\
-            Введите количество приемов пищи (от 1 до 6)
-        ''')
+        dedent(
+            f'''\
+                Введите количество приемов пищи (от 1 до 6)
+            '''
+        )
     )
     return States.EATING_COUNT
 
@@ -161,9 +159,11 @@ def set_eating_count(update, context):
     subscription.save()
 
     update.message.reply_text(
-        dedent(f'''\
-            Исключите аллергены из меню или нажмите "Далее"
-        '''),
+        dedent(
+            f'''\
+                Исключите аллергены из меню или нажмите "Далее"
+            '''
+        ),
         reply_markup=keyboards.create_allergy_keyboard()
     )
     return States.ALLERGY
@@ -190,9 +190,11 @@ def set_allergy(update, context):
     subscription.allergy.add(allergy)
 
     update.message.reply_text(
-        dedent(f'''\
-            Исключите аллергены из меню или нажмите "Далее"
-        '''),
+        dedent(
+            f'''\
+                Исключите аллергены из меню или нажмите "Далее"
+            '''
+        ),
         reply_markup=keyboards.create_allergy_keyboard()
     )
     return States.ALLERGY
@@ -200,9 +202,11 @@ def set_allergy(update, context):
 
 def go_to_period_input(update, context):
     update.message.reply_text(
-        dedent(f'''\
-            Выберите срок подписки
-        '''),
+        dedent(
+            f'''\
+                Выберите срок подписки
+            '''
+        ),
         reply_markup=keyboards.create_subscription_period_keyboard()
     )
     return States.INPUT_PERIOD
@@ -227,9 +231,11 @@ def set_expiration_date(update, context):
             + timedelta(30*12)
     subscription.save()
     update.message.reply_text(
-        dedent(f'''\
-            Оплатите подписку
-        '''),
+        dedent(
+            f'''\
+                Оплатите подписку
+            '''
+        ),
         reply_markup=keyboards.create_payment_keyboard()
     )
     return States.PAYMENT
@@ -257,9 +263,11 @@ def do_payment(update, context):
 def show_subscriptions(update, context):
     chat_id = update.message.chat_id
     update.message.reply_text(
-        dedent(f'''\
-            Список ваших подписок:
-        '''),
+        dedent(
+            f'''\
+                Список ваших подписок:
+            '''
+        ),
         reply_markup=keyboards.create_subscriptions_keyboard(chat_id)
     )
     return States.CHOOSE_DISH
@@ -269,9 +277,11 @@ def choose_dish(update, context):
     subscription_id = update.message.text.split(' ')[3]
     subscription = Subscription.objects.get(id=subscription_id)
     update.message.reply_text(
-        dedent(f'''\
-            Список блюд на сегодня:
-        '''),
+        dedent(
+            f'''\
+                Список блюд на сегодня:
+            '''
+        ),
         reply_markup=keyboards.create_day_menu_keyboard(subscription_id)
     )
     return States.SHOW_DISH
@@ -284,22 +294,28 @@ def show_dish(update, context):
     ingredients = '\n'.join(dish.ingredients)
     instructions = '\n'.join(dish.instructions)
     update.message.reply_text(
-        dedent(f'''\
-            \n{name}
-            \n{dish.description}
-            \nИнгредиенты: \n{ingredients}
-            \nРецепт: \n{instructions}
-            \nВремя приготовления: {dish.timing}
-        ''')
+        dedent(
+            f'''\
+                \n{name}
+                \n{dish.description}
+                \nИнгредиенты: \n{ingredients}
+                \nРецепт: \n{instructions}
+                \nВремя приготовления: {dish.timing}
+                \n\nСервис для составления меню по вашим запросам
+            '''
+        ),
+        reply_markup=keyboards.create_start_keyboard()
     )
     return States.START
 
 
 def cancel(update, context):
     update.message.reply_text(
-        dedent(f'''\
-        Сервис для составления меню по вашим запросам
-        '''),
+        dedent(
+            f'''\
+                Сервис для составления меню по вашим запросам
+            '''
+        ),
         reply_markup=keyboards.create_start_keyboard()
     )
     return States.START
