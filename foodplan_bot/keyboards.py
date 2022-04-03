@@ -98,6 +98,7 @@ def create_subscriptions_keyboard(chat_id):
                 )
             ]
         )
+    keyboard.append([KeyboardButton(text='Отмена')],)
     return make_reply_markup(keyboard)
 
 
@@ -116,4 +117,5 @@ def create_day_menu_keyboard(subscription_id):
                 )
             ]
         )
+    keyboard.append([KeyboardButton(text='Отмена')],)
     return make_reply_markup(keyboard)
