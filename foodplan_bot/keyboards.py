@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from telegram import KeyboardButton, ReplyKeyboardMarkup
 
-from foodplan_bot.models import Subscription
+from foodplan_bot.models import Subscription, DishRecipe
 
 
 def make_reply_markup(keyboard):
@@ -106,13 +106,12 @@ def create_day_menu_keyboard(subscription_id):
     keyboard = list()
     menu_date = datetime.now(timezone.utc).strftime("%d-%m-%Y")
     for dish_id in subscription.menu[menu_date].values():
+        dish = DishRecipe.objects.get(id=dish_id)
         keyboard.append(
             [
                 KeyboardButton(
                     text=(
-                        f'Блюдо c id {dish_id}'
-                        # f'{subscription.menu_type.lower()} меню до '
-                        # f'{subscription.expiration_date.strftime("%d-%m-%Y")}'
+                        f'{dish.name}'
                     )
                 )
             ]
