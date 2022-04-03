@@ -15,10 +15,14 @@ class Command(BaseCommand):
         def update_recipes(filepath):
             dish_recipes = read_from_json(filepath)
             for dish in dish_recipes:
+                if dish['diet'] == 'classic':
+                    menu_type = 'Классическое'
                 if dish['diet'] == 'vegetarian':
                     menu_type = 'Вегетарианское'
                 if dish['diet'] == 'low_carb':
                     menu_type = 'Низкоуглеводное'
+                if dish['diet'] == 'keto':
+                    menu_type = 'Кето'
                 dish_recipe = DishRecipe.objects.get_or_create(
                     name = dish['name'],
                     defaults={
