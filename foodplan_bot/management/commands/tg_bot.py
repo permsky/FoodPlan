@@ -289,7 +289,7 @@ def show_subscriptions(update, context):
                 '''
             )
         )
-    return States.START
+    return States.CREATE_SUBSCRIPTION
 
 
 def choose_dish(update, context):
