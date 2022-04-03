@@ -22,7 +22,7 @@ from telegram.ext import (
 )
 
 from foodplan_bot import keyboards
-from foodplan_bot.models import Allergy, Subscription, User
+from foodplan_bot.models import Allergy, DishRecipe, Subscription, User
 
 
 class Command(BaseCommand):
@@ -278,9 +278,18 @@ def choose_dish(update, context):
 
 
 def show_dish(update, context):
+    name = update.message.text
+    dish = DishRecipe.objects.get(name=name)
+    context.bot.send_photo(update.message.chat_id, str(dish.image))
+    ingredients = '\n'.join(dish.ingredients)
+    instructions = '\n'.join(dish.instructions)
     update.message.reply_text(
         dedent(f'''\
-            Детали блюда:
+            \n{name}
+            \n{dish.description}
+            \nИнгредиенты: \n{ingredients}
+            \nРецепт: \n{instructions}
+            \nВремя приготовления: {dish.timing}
         ''')
     )
     return States.START
