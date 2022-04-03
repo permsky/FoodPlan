@@ -196,7 +196,8 @@ class DishRecipe(models.Model):
 
     name = models.CharField(
         verbose_name='Название блюда',
-        max_length=256
+        max_length=256,
+        unique=True
     )
     image = models.ImageField(
         upload_to='dishes',
