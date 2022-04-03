@@ -271,15 +271,25 @@ def do_payment(update, context):
 
 def show_subscriptions(update, context):
     chat_id = update.message.chat_id
+    subscriptions = Subscription.objects.filter(user__tg_chat_id=chat_id).filter(is_paid=True)
+    if subscriptions:
+        update.message.reply_text(
+            dedent(
+                f'''\
+                    Список ваших подписок:
+                '''
+            ),
+            reply_markup=keyboards.create_subscriptions_keyboard(chat_id)
+        )
+        return States.CHOOSE_DISH
     update.message.reply_text(
-        dedent(
-            f'''\
-                Список ваших подписок:
-            '''
-        ),
-        reply_markup=keyboards.create_subscriptions_keyboard(chat_id)
-    )
-    return States.CHOOSE_DISH
+            dedent(
+                f'''\
+                    У вас еще нет подписок.
+                '''
+            )
+        )
+    return States.START
 
 
 def choose_dish(update, context):
