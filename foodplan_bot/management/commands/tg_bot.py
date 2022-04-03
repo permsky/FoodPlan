@@ -257,7 +257,16 @@ def do_payment(update, context):
             '''
         )
     )
-    return States.START
+    chat_id = update.message.chat_id
+    update.message.reply_text(
+        dedent(
+            f'''\
+                Список ваших подписок:
+            '''
+        ),
+        reply_markup=keyboards.create_subscriptions_keyboard(chat_id)
+    )
+    return States.CHOOSE_DISH
 
 
 def show_subscriptions(update, context):
