@@ -31,20 +31,9 @@ class User(models.Model):
 
 
 class Category(models.Model):
-    # CATEGORY_CHOICES = [
-    #     ('1', 'Блюда из картофеля'),
-    #     ('2', 'Овощи и грибы'),
-    #     ('3', 'Рыба и морепродукты'),
-    #     ('4', 'Мясо'),
-    #     ('5', 'Крупы, бобовые'),
-    #     ('6', 'Яйца и молочные продукты'),
-    #     ('7', 'грибы'),
-    # ]
-
     name = models.CharField(
         verbose_name='Категория блюда',
         max_length=50,
-        # choices=CATEGORY_CHOICES,
         unique=True
     )
 
