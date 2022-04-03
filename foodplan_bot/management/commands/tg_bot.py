@@ -287,7 +287,8 @@ def show_subscriptions(update, context):
                 f'''\
                     У вас еще нет подписок.
                 '''
-            )
+            ),
+            reply_markup=keyboards.create_initial_keyboard()
         )
     return States.CREATE_SUBSCRIPTION
 
